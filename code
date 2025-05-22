@@ -1,0 +1,82 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+# File paths dictionary (update if using different paths or names)
+file_paths = {
+'hashmith': '/content/hashmith.csv',
+'mokesh': '/content/mokesh.csv',
+'mukesh_raja': '/content/mukesh_raja.csv',
+'surya': '/content/surya.csv',
+'swaroop': '/content/swaroop.csv'
+}
+# Load datasets
+datasets = {}
+for name, path in file_paths.items():
+df = pd.read_csv(path)
+df.columns = df.columns.str.strip().str.lower() # Normalize column names
+df['date'] = pd.to_datetime(df['date'], errors='coerce')
+df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
+df = df.dropna(subset=['date', 'amount'])
+datasets[name] = df
+#Transaction by Each Person
+print("🔍 Transaction by Each Person:\n")
+for name, df in datasets.items():
+max_row = df[df['amount'] == df['amount'].max()]
+print(f"{name.upper()}:\n{max_row[['date', 'amount', 'detail']]}\n")
+# Group by 'person' and 'detail', then sum the amounts
+grouped = combined_df.groupby(['person',
+'detail'])['amount'].sum().reset_index()
+# Sort for better readability
+grouped = grouped.sort_values(by=['person', 'amount'], ascending=[True,
+False])
+# Print individual summaries
+for person in grouped['person'].unique():
+print(f"\n--- {person} ---")
+person_data = grouped[grouped['person'] == person]
+for _, row in person_data.iterrows():
+print(f"{row['detail']}: ₹{row['amount']:.2f}")
+#pie chart of top Transcation
+for name, df in datasets.items():
+top_details =
+df.groupby('detail')['amount'].sum().sort_values(ascending=False).head(5)
+plt.figure(figsize=(6, 6))
+top_details.plot(kind='pie', autopct='%1.1f%%', startangle=140)
+plt.title(f'Top Transaction Details for {name}')
+plt.ylabel('')
+plt.show()
+#transcation Amount by detail and Person(graph)
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Step 1: Combine all datasets and add 'person' column
+combined_list = []
+for name, df in datasets.items():
+df['person'] = name
+df['month'] = df['date'].dt.strftime('%B') # Month name
+combined_list.append(df)
+combined_df = pd.concat(combined_list, ignore_index=True)
+# Step 2: Group by month, detail, and person, summing amounts
+grouped = combined_df.groupby(['month', 'detail',
+'person'])['amount'].sum().reset_index()
+# Step 3: Plot
+plt.figure(figsize=(14, 7))
+sns.barplot(data=grouped, x='detail', y='amount', hue='person')
+plt.title("Transaction Amount by Detail and Person")
+plt.xlabel("Transaction Detail")
+plt.ylabel("Total Transaction Amount (Grouped by Month)")
+plt.xticks(rotation=45)
+plt.legend(title="Person")
+plt.tight_layout()
+plt.show()
+#Correlation matrix(heap map)
+# Combine datasets
+combined = pd.concat(datasets.values(), ignore_index=True)
+# Encode 'detail' as numeric
+combined['detail_encoded'] = combined['detail'].astype('category').cat.codes
+# Correlation matrix
+corr = combined[['amount', 'detail_encoded']].corr()
+# Heatmap
+plt.figure(figsize=(6, 4))
+sns.heatmap(corr, annot=True, cmap='coolwarm')
+plt.title("Correlation Matrix Heatmap")
+plt.show()
